@@ -1,5 +1,6 @@
-var https = require('https');
-var fs = require('fs');
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
 
 /**
  * Demonstrates a simple HTTP endpoint using API Gateway. You have full
@@ -18,8 +19,8 @@ exports.handler = async (event, context) => {
     }
     const conference = 'october-2021-general-conference';
     const fileName = '2021-10-1010-russell-m-nelson-32k-eng.mp3';
-    await fetchConferenceTalk(conference, fileName);
-    console.log('22');
+    const data = await downloadFile(conference, fileName);
+    console.log('data', data);
     body = fs.readFileSync(`./temp/${fileName}`, { encoding: 'utf-8' });
   } catch (err) {
     statusCode = '400';
@@ -43,31 +44,24 @@ function getRandomConferenceSlug() {
   return months[randomMonthInt];
 }
 
-async function fetchConferenceTalk(conference, fileName) {
+async function downloadFile (conference, fileName) {
   const url = `https://media2.ldscdn.org/assets/general-conference/${conference}/${fileName}`;
-  const destination = `./temp/${fileName}`;
-  let file = fs.createWriteStream(destination);
-  // download(url, destination, (file) => {
-  //   console.log('file', file);
-  // });
-  try {
-      const request = await https.get(url);
-      request.pipe(file);
-      file.on('finish', () => file.close());
-  } catch {
-      fs.unlink(fileName);
-  }
-}
-
-var download = function (url, dest, cb) {
-  var file = fs.createWriteStream(dest);
-  var request = https.get(url, function (response) {
-    response.pipe(file);
-    file.on('finish', function () {
-      file.close(cb);  // close() is async, call cb after close completes.
-    });
-  }).on('error', function (err) { // Handle errors
-    fs.unlink(dest); // Delete the file async. (But we don't check the result)
-    if (cb) cb(err.message);
+  const destination = path.resolve(__dirname, 'temp', fileName);
+  
+  const response = await axios({
+    method: 'GET',
+    url,
+    responseType: 'stream',
   });
-};
+
+  response.data.pipe(fs.createWriteStream(destination));
+
+  return new Promise((resolve, reject) => {
+    response.data.on('end', () => {
+      resolve();
+    });
+    response.data.on('error', () => {
+      reject();
+    });
+  });
+}

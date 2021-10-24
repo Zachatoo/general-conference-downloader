@@ -1,6 +1,9 @@
 # Temporary files
 temp
 
+# Zip files
+.zip
+
 # Logs
 logs
 *.log
