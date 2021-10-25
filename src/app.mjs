@@ -2,23 +2,9 @@ import { promises as fsPromises, existsSync, mkdirSync, createWriteStream } from
 import { resolve } from 'path';
 import axios from 'axios';
 
-/**
- * Demonstrates a simple HTTP endpoint using API Gateway. You have full
- * access to the request and response payload, including headers and
- * status code.
- */
 export class App {
   constructor(event, context) {
     return this.init(event, context);
-    // console.log(event);
-    // this.event = event;
-    // this.context = context;
-    // this.statusCode = '200';
-    // this.headers = {
-    //   'Content-Type': 'audio/mpeg',
-    //   isBase64Encoded: true,
-    // };
-    // this.init();
   }
 
   async init (event, context) {
@@ -35,9 +21,9 @@ export class App {
       }
       const conference = 'october-2021-general-conference';
       const fileName = '2021-10-1010-russell-m-nelson-32k-eng.mp3';
-      const directory = makeDirectory(resolve('tmp'));
-      const destination = resolve(directory, fileName);
-      // const destination = `/tmp/${fileName}`;
+      // const directory = makeDirectory(resolve('tmp'));
+      // const destination = resolve(directory, fileName);
+      const destination = `/tmp/${fileName}`;
       const data = await downloadFile(conference, fileName, destination);
       body = await fsPromises.readFile(destination, { encoding: 'utf-8' });
     } catch (err) {
