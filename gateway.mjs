@@ -6,8 +6,8 @@ const event = {
 
 async function init () {
     const response = await handler(event);
-    // console.log(response.body);
-    console.log('headers', response.headers);
+    console.log(response.body);
+    // console.log('headers', response.headers);
     console.log('status', response.statusCode);
 }
 
