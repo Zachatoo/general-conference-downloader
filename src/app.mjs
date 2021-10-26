@@ -12,7 +12,9 @@ export class App {
     let statusCode = '200';
     let headers = {
       'Content-Type': 'audio/mpeg',
-      isBase64Encoded: true,
+      // 'Content-Type': 'application/octet-stream',
+      'Accept-Ranges': 'bytes',
+      // isBase64Encoded: true,
     };
 
     try {
@@ -21,9 +23,8 @@ export class App {
       }
       const conference = 'october-2021-general-conference';
       const fileName = '2021-10-1010-russell-m-nelson-32k-eng.mp3';
-      // const directory = makeDirectory(resolve('tmp'));
-      // const destination = resolve(directory, fileName);
-      const destination = `/tmp/${fileName}`;
+      const directory = makeDirectory('tmp');
+      const destination = `${directory}/${fileName}`;
       const data = await downloadFile(conference, fileName, destination);
       body = await fsPromises.readFile(destination, { encoding: 'utf-8' });
     } catch (err) {
@@ -33,6 +34,7 @@ export class App {
       };
       body = err.message;
     }
+    body = process.env;
 
     return {
       statusCode: statusCode,
@@ -49,10 +51,15 @@ function getRandomConferenceSlug() {
 }
 
 function makeDirectory (dir) {
-  if (!existsSync(dir)){
-    mkdirSync(dir);
+  if (process.env.environment === 'production') {
+    return dir;
   }
-  return dir;
+
+  const localDir = resolve(dir);
+  if (!existsSync(localDir)) {
+    mkdirSync(localDir);
+  }
+  return localDir;
 }
 
 async function downloadFile (conference, fileName, destination) {
