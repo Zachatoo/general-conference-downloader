@@ -23,7 +23,7 @@ export class App {
       const audioUrl = await getAudioUrlFromTalkUri(randomTalkUri);
       body = { audioUrl };
     } catch (err) {
-      statusCode = '400';
+      statusCode = '500';
       body = err.message;
     } finally {
       if (typeof body !== 'string') {
@@ -48,11 +48,17 @@ async function getToc () {
 
   const { body } = response.data?.content;
   if (!body) {
-    throw new Error('Missing body');
+    throw new Error(`Failed to parse table of contents at ${url}`);
   }
 
   const regex = /\/general-conference\/\d{4}\/\d{2}\/.+?"/g;
-  const matches = [...body.matchAll(regex)].map(match => match[0].substring(0, match[0].length - 1));
+  const matches = [...body.matchAll(regex)]
+    .map(match => match[0].substring(0, match[0].length - 1))
+    .filter(match => match.indexOf('session') === -1);
+
+  if (matches?.length === 0) {
+    throw new Error(`Failed to find matches in table of contents with the following regex ${regex}`);
+  }
   return matches;
 }
 
@@ -74,7 +80,7 @@ async function getAudioUrlFromTalkUri (talkUri) {
 
   const { mediaUrl } = response.data?.meta?.audio?.[0];
   if (!mediaUrl) {
-    throw new Error('Missing audio');
+    throw new Error(`Failed to download audio for conference talk at ${url}`);
   }
   return mediaUrl;
 }
