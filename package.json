@@ -1,8 +1,7 @@
 {
   "scripts": {
     "dev": "node gateway.mjs",
-    "clean": "rm -rf tmp",
-    "zip": "yarn clean && powershell Compress-Archive * publish.zip -Force"
+    "zip": "powershell Compress-Archive * publish.zip -Force"
   },
   "dependencies": {
     "axios": "^0.23.0"

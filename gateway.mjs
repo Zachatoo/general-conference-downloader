@@ -4,6 +4,9 @@ const event = {
     httpMethod: 'GET',
 }
 
+/**
+ * Simulate AWS API Gateway for local testing.
+ */
 async function init () {
     const response = await handler(event);
     console.log(response.body);
