@@ -1,20 +1,20 @@
-import axios from 'axios';
+import axios from "axios";
 
 export class App {
   constructor(event, context) {
     return this.init(event, context);
   }
 
-  async init (event, context) {
+  async init(event, context) {
     let body;
-    let statusCode = '200';
+    let statusCode = "200";
     let headers = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       isBase64Encoded: false,
     };
 
     try {
-      if (event.httpMethod !== 'GET') {
+      if (event.httpMethod !== "GET") {
         throw new Error(`Unsupported method "${event.httpMethod}"`);
       }
 
@@ -23,10 +23,10 @@ export class App {
       const audioUrl = await getAudioUrlFromTalkUri(randomTalkUri);
       body = { audioUrl };
     } catch (err) {
-      statusCode = '500';
+      statusCode = "500";
       body = err.message;
     } finally {
-      if (typeof body !== 'string') {
+      if (typeof body !== "string") {
         body = JSON.stringify(body);
       }
     }
@@ -39,10 +39,10 @@ export class App {
   }
 }
 
-async function getToc () {
+async function getToc() {
   const url = getRandomConferenceTocUrl();
   const response = await axios({
-    method: 'GET',
+    method: "GET",
     url,
   });
 
@@ -53,17 +53,19 @@ async function getToc () {
 
   const regex = /\/general-conference\/\d{4}\/\d{2}\/.+?"/g;
   const matches = [...body.matchAll(regex)]
-    .map(match => match[0].substring(0, match[0].length - 1))
-    .filter(match => match.indexOf('session') === -1);
+    .map((match) => match[0].substring(0, match[0].length - 1))
+    .filter((match) => match.indexOf("session") === -1);
 
   if (matches?.length === 0) {
-    throw new Error(`Failed to find matches in table of contents with the following regex ${regex}`);
+    throw new Error(
+      `Failed to find matches in table of contents with the following regex ${regex}`
+    );
   }
   return matches;
 }
 
-function getRandomConferenceTocUrl () {
-  const randomMonth = Math.random() < 0.5 ? '04' : '10'; // april or october
+function getRandomConferenceTocUrl() {
+  const randomMonth = Math.random() < 0.5 ? "04" : "10"; // april or october
   const randomYear = randomInt(1971, new Date().getFullYear());
   const uri = encodeURI(`/general-conference/${randomYear}/${randomMonth}`);
 
@@ -71,10 +73,10 @@ function getRandomConferenceTocUrl () {
   return url;
 }
 
-async function getAudioUrlFromTalkUri (talkUri) {
+async function getAudioUrlFromTalkUri(talkUri) {
   const url = getFullUrl(talkUri);
   const response = await axios({
-    method: 'GET',
+    method: "GET",
     url,
   });
 
@@ -85,12 +87,13 @@ async function getAudioUrlFromTalkUri (talkUri) {
   return mediaUrl;
 }
 
-function getFullUrl (uri) {
-  const churchOfJesusChristBaseUrl = 'https://www.churchofjesuschrist.org/study/api/v3/language-pages/type';
-  const lang = 'eng';
+function getFullUrl(uri) {
+  const churchOfJesusChristBaseUrl =
+    "https://www.churchofjesuschrist.org/study/api/v3/language-pages/type";
+  const lang = "eng";
   return `${churchOfJesusChristBaseUrl}/content?lang=${lang}&uri=${uri}`;
 }
 
-function randomInt (min, max) {
+function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }

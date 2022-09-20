@@ -1,9 +1,15 @@
 {
+  "name": "general-conference-downloader",
+  "private": true,
+  "sideEffects": false,
   "scripts": {
     "dev": "node gateway.mjs",
     "zip": "powershell Compress-Archive * publish.zip -Force"
   },
   "dependencies": {
-    "axios": "^0.23.0"
+    "axios": "^0.27.2"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }
