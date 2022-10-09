@@ -3,13 +3,20 @@
   "private": true,
   "sideEffects": false,
   "scripts": {
-    "dev": "node gateway.mjs",
-    "zip": "zip -r ./publish.zip ./"
+    "test": "vitest",
+    "zip": "zip -r ./publish.zip ./",
+    "typecheck": "tsc"
   },
   "dependencies": {
+    "aws-lambda": "^1.0.7",
     "axios": "^0.27.2"
   },
   "engines": {
     "node": ">=14"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.106",
+    "typescript": "^4.8.4",
+    "vitest": "^0.24.0"
   }
 }

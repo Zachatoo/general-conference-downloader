@@ -1,45 +1,7 @@
 import axios from "axios";
+import { randomInt } from "./number-utils";
 
-export class App {
-  constructor(event, context) {
-    return this.init(event, context);
-  }
-
-  async init(event, context) {
-    let body;
-    let statusCode = "200";
-    let headers = {
-      "Content-Type": "application/json",
-      isBase64Encoded: false,
-    };
-
-    try {
-      if (event.httpMethod !== "GET") {
-        throw new Error(`Unsupported method "${event.httpMethod}"`);
-      }
-
-      const toc = await getToc();
-      const randomTalkUri = toc[randomInt(0, toc.length - 1)];
-      const audioUrl = await getAudioUrlFromTalkUri(randomTalkUri);
-      body = { audioUrl };
-    } catch (err) {
-      statusCode = "500";
-      body = err.message;
-    } finally {
-      if (typeof body !== "string") {
-        body = JSON.stringify(body);
-      }
-    }
-
-    return {
-      statusCode,
-      body,
-      headers,
-    };
-  }
-}
-
-async function getToc() {
+export async function getToc() {
   const url = getRandomConferenceTocUrl();
   const response = await axios({
     method: "GET",
@@ -64,7 +26,7 @@ async function getToc() {
   return matches;
 }
 
-function getRandomConferenceTocUrl() {
+export function getRandomConferenceTocUrl() {
   const randomMonth = Math.random() < 0.5 ? "04" : "10"; // april or october
   const randomYear = randomInt(1971, new Date().getFullYear());
   const uri = encodeURI(`/general-conference/${randomYear}/${randomMonth}`);
@@ -73,7 +35,7 @@ function getRandomConferenceTocUrl() {
   return url;
 }
 
-async function getAudioUrlFromTalkUri(talkUri) {
+export async function getAudioUrlFromTalkUri(talkUri: string) {
   const url = getFullUrl(talkUri);
   const response = await axios({
     method: "GET",
@@ -87,13 +49,9 @@ async function getAudioUrlFromTalkUri(talkUri) {
   return mediaUrl;
 }
 
-function getFullUrl(uri) {
+export function getFullUrl(uri: string) {
   const churchOfJesusChristBaseUrl =
     "https://www.churchofjesuschrist.org/study/api/v3/language-pages/type";
   const lang = "eng";
   return `${churchOfJesusChristBaseUrl}/content?lang=${lang}&uri=${uri}`;
-}
-
-function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
