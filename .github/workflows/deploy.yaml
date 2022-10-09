@@ -6,11 +6,41 @@ on:
       - main
 
 jobs:
-  deploy:
+  typecheck:
+    name: TypeScript
     runs-on: ubuntu-latest
     steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Type check
+        run: npm run typecheck --if-present
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
       - name: Install dependencies
         run: npm i
@@ -18,8 +48,48 @@ jobs:
       - name: Test
         run: npm test
 
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm i
+
       - name: Build
         run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: function
+          path: ./dist/function.zip
+
+  deploy:
+    name: Deploy
+    needs:
+      - typecheck
+      - test
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: function
 
       - name: Deploy to AWS
         uses: appleboy/lambda-action@master
@@ -28,4 +98,4 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
           function_name: fetchGeneralConferenceTalk
-          zip_file: dist/function.zip
+          zip_file: function
