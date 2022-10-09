@@ -4,7 +4,7 @@
   "sideEffects": false,
   "scripts": {
     "test": "vitest",
-    "zip": "zip -r ./publish.zip ./",
+    "build": "esbuild index.ts --bundle --outfile=dist/index.js --platform=node && cd dist && zip -r function.zip .",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.106",
+    "esbuild": "^0.15.10",
     "typescript": "^4.8.4",
     "vitest": "^0.24.0"
   }

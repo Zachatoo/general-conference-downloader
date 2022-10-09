@@ -1,9 +1,6 @@
 # Temporary files
 tmp
 
-# Zip files
-*.zip
-
 # Logs
 logs
 *.log
@@ -20,7 +17,10 @@ node_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
+# Dotenv environment variables file
 .env
+
+# Build files
+dist/
 
 .DS_Store
