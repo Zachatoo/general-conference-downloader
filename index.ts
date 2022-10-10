@@ -1,7 +1,8 @@
 import { Context, APIGatewayProxyResult, APIGatewayEvent } from "aws-lambda";
 import { getAudioUrlFromTalkUri, getToc } from "./src/church-utils";
 import { UnsupportedMethodError } from "./src/errors";
-import { randomInt } from "./src/number-utils";
+import { getMonth } from "./src/query-string-parsers";
+import { randomInt } from "./src/random";
 
 export const handler = async (
   event: APIGatewayEvent,
@@ -19,7 +20,10 @@ export const handler = async (
       throw new UnsupportedMethodError(event.httpMethod);
     }
 
-    const toc = await getToc();
+    const toc = await getToc({
+      year: event.queryStringParameters?.year,
+      month: getMonth(event.queryStringParameters),
+    });
     const randomTalkUri = toc[randomInt(0, toc.length - 1)];
     const audioUrl = await getAudioUrlFromTalkUri(randomTalkUri);
     body = { audioUrl };

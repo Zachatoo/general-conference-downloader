@@ -1,8 +1,13 @@
 import axios from "axios";
-import { randomInt } from "./number-utils";
+import { randomMonth, randomYear } from "./random";
 
-export async function getToc() {
-  const url = getRandomConferenceTocUrl();
+interface TocParams {
+  year?: string;
+  month?: "04" | "10";
+}
+
+export async function getToc({ year, month }: TocParams) {
+  const url = getGeneralConferenceTocUrl({ year, month });
   const response = await axios({
     method: "GET",
     url,
@@ -26,10 +31,10 @@ export async function getToc() {
   return matches;
 }
 
-export function getRandomConferenceTocUrl() {
-  const randomMonth = Math.random() < 0.5 ? "04" : "10"; // april or october
-  const randomYear = randomInt(1971, new Date().getFullYear());
-  const uri = encodeURI(`/general-conference/${randomYear}/${randomMonth}`);
+function getGeneralConferenceTocUrl({ year, month }: TocParams) {
+  const uri = encodeURI(
+    `/general-conference/${year ?? randomYear()}/${month ?? randomMonth()}`
+  );
 
   const url = getFullUrl(uri);
   return url;
@@ -49,7 +54,7 @@ export async function getAudioUrlFromTalkUri(talkUri: string) {
   return mediaUrl;
 }
 
-export function getFullUrl(uri: string) {
+function getFullUrl(uri: string) {
   const churchOfJesusChristBaseUrl =
     "https://www.churchofjesuschrist.org/study/api/v3/language-pages/type";
   const lang = "eng";

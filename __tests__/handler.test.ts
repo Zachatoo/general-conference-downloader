@@ -10,6 +10,9 @@ import { handler } from "../index";
 
 describe("handler", () => {
   it("returns valid response on GET", async () => {
+    const regex = new RegExp(
+      `^https:\/\/media2\.ldscdn\.org\/assets\/general-conference\/(april|october)-\\d{4}-general-conference\/.*\.mp3$`
+    );
     const { statusCode, body, headers } = await handler(
       createMockEvent("GET"),
       createMockContext()
@@ -20,9 +23,10 @@ describe("handler", () => {
     expect(headers?.["Content-Type"]).toBe("application/json");
     expect(parsedBody).toHaveProperty("audioUrl");
     expect(parsedBody?.audioUrl).toBeTypeOf("string");
+    expect(parsedBody?.audioUrl).toMatch(regex);
   });
 
-  it("returns 501 if not GET", async () => {
+  it("returns 501 if not POST", async () => {
     const { statusCode, body, headers } = await handler(
       createMockEvent("POST"),
       createMockContext()
@@ -32,9 +36,39 @@ describe("handler", () => {
     expect(headers?.["Content-Type"]).toBe("text/plain");
     expect(body).toBe('Unsupported method "POST"');
   });
+
+  it.each([
+    [{ mockMonth: "october", mockYear: "2022" }],
+    [{ mockMonth: "april", mockYear: "2000" }],
+  ])(
+    "returns talk from specific conference",
+    async ({ mockYear, mockMonth }) => {
+      const regex = new RegExp(
+        `^https:\/\/media2\.ldscdn\.org\/assets\/general-conference\/${mockMonth}-${mockYear}-general-conference\/${mockYear}.*\.mp3$`
+      );
+      const queryStringParameters = {
+        year: mockYear,
+        month: mockMonth,
+      };
+      const { statusCode, body, headers } = await handler(
+        createMockEvent("GET", { queryStringParameters }),
+        createMockContext()
+      );
+      const parsedBody = JSON.parse(body);
+
+      expect(statusCode).toBe(200);
+      expect(headers?.["Content-Type"]).toBe("application/json");
+      expect(parsedBody).toHaveProperty("audioUrl");
+      expect(parsedBody?.audioUrl).toBeTypeOf("string");
+      expect(parsedBody?.audioUrl).toMatch(regex);
+    }
+  );
 });
 
-function createMockEvent(httpMethod: string): APIGatewayEvent {
+function createMockEvent(
+  httpMethod: string,
+  options?: Partial<APIGatewayEvent>
+): APIGatewayEvent {
   const mockIdentity: APIGatewayEventIdentity = {
     accessKey: null,
     accountId: null,
@@ -80,6 +114,7 @@ function createMockEvent(httpMethod: string): APIGatewayEvent {
     stageVariables: null,
     requestContext: mockRequestContext,
     resource: "",
+    ...(options ?? {}),
   };
   return mockEvent;
 }
